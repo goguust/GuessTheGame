@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width:960px;margin:0 auto;text-align:center;">
+  <h2>Cannabis vs Cocaine/Fentanyl</h2>
+
+  {% if streak > 0 %}
+  <div class="streak-badge {% if mult >= 10 %}streak-x10{% elif mult >= 4 %}streak-x4{% elif mult >= 2 %}streak-x2{% endif %}">
+    <span class="flame">🔥</span>
+    <span class="streak-label">STREAK {{ streak }} &nbsp;•&nbsp; x{{ mult }}</span>
+  </div>
+  {% endif %}
+
+  <div style="font-size:18px;margin:8px 0;">
+    <strong>Score:</strong> {{ score }} &nbsp;|&nbsp;
+    <strong>Streak:</strong> {{ streak }} &nbsp;|&nbsp;
+    <strong>Moltiplicatore:</strong> x{{ mult }}
+  </div>
+
+  <div style="margin:8px 0;font-size:24px;">
+    {% for i in "12345" %}
+      {% if forloop.counter <= lives %}
+        <span style="color:#e11d48;">&#10084;&#65039;</span>
+      {% else %}
+        <span style="opacity:0.2;">&#10084;&#65039;</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <p>Scegli chi è il <strong>cannabis user</strong>.</p>
+
+  <div style="display:flex; gap:24px; justify-content:center; align-items:flex-start; margin-top:16px;">
+    <form method="post" action="{% url 'drugs_mode_choose' %}">
+      {% csrf_token %}
+      <input type="hidden" name="side" value="left">
+      <button type="submit" style="border:none;background:none;cursor:pointer;">
+        <img src="{{ left.image.url }}" alt="Left" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+      </button>
+      <div style="margin-top:6px;font-weight:600;">{{ left.last_name }}, {{ left.first_name }}</div>
+    </form>
+
+    <form method="post" action="{% url 'drugs_mode_choose' %}">
+      {% csrf_token %}
+      <input type="hidden" name="side" value="right">
+      <button type="submit" style="border:none;background:none;cursor:pointer;">
+        <img src="{{ right.image.url }}" alt="Right" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+      </button>
+      <div style="margin-top:6px;font-weight:600;">{{ right.last_name }}, {{ right.first_name }}</div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.streak-badge{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:999px; color:#fff;
+  background:#111; box-shadow: 0 10px 20px rgba(0,0,0,.25);
+  animation: pop-in .25s ease-out;
+  margin:8px auto 4px;
+}
+.streak-x2{ background:#2563eb; }
+.streak-x4{ background:#9333ea; }
+.streak-x10{ background:#e11d48; }
+
+.flame{ display:inline-block; animation: flame-float 1.2s ease-in-out infinite; }
+.streak-label{ font-weight:800; letter-spacing:.3px; }
+
+@keyframes flame-float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+@keyframes pop-in {
+  0% { transform: scale(.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+{% endblock %}

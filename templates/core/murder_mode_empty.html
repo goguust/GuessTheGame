@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:720px;margin:0 auto;text-align:center;">
+  <h2>Modalità Murder vs Non-Murder</h2>
+  <p style="margin-top:10px;">Non ci sono abbastanza detenuti con foto per iniziare un round.</p>
+
+  <div style="margin:12px 0;">
+    <strong>Disponibili con foto</strong><br>
+    Murder: {{ murder_count }}<br>
+    Non-murder: {{ non_murder_count }}
+  </div>
+
+  <ol style="text-align:left; display:inline-block;">
+    <li>Premi <em>Aggiorna database</em>.</li>
+    <li>Premi <em>Filtra Murder</em> per popolare le due liste.</li>
+    <li>Riprova: <a href="{% url 'murder_mode_start' %}">Gioca</a></li>
+  </ol>
+</div>
+{% endblock %}

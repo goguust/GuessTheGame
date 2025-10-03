@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>GameHub</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;margin:0;background:#f7f7fb}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:12px 16px;background:#111;color:#fff}
+    header a{color:#fff;text-decoration:none;margin-right:12px}
+    .container{max-width:980px;margin:24px auto;padding:0 16px}
+    .btn{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+    .btn-primary{background:#0d6efd;color:#fff;border-color:#0d6efd}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .card{background:#fff;border:1px solid #e6e6ef;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    img.fit{max-width:100%;height:auto;border-radius:12px;display:block;margin:0 auto}
+    .name{text-align:center;font-weight:600;margin-top:10px}
+    form.inline{display:inline}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <a href="/">GameHub</a> ·
+    <a href="/mode/1/">Modalità 1</a>
+  </div>
+  <div>
+    {% if request.user.is_staff %}
+    <form method="post" action="{% url 'update_db' %}" style="display:flex; gap:8px; align-items:center; margin-right:12px;">
+  {% csrf_token %}
+  <input type="number" name="limit" placeholder="0 = tutti" style="width:100px;">
+  <input type="text" name="filters" placeholder="lettere (es: ad)" style="width:180px;">
+  <!--<input type="text" name="charges_contains" placeholder="filtra charges (es: cannabis)" style="width:220px;">-->
+  <button type="submit">Aggiorna database</button>
+</form>
+
+
+<form method="post" action="{% url 'run_filters' %}" style="display:inline;">
+  {% csrf_token %}
+  <button type="submit">Filtra</button>
+</form>
+<form method="post" action="{% url 'run_filters_murder' %}" style="display:inline;margin-left:8px;">
+  {% csrf_token %}
+  <button type="submit">Filtra Murder</button>
+</form>
+<form action="{% url 'run_filters_drugs' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Filtra Drugs</button>
+      </form>
+
+    {% endif %}
+  </div>
+</header>
+<div class="container">
+  {% for m in messages %}
+    <div class="card" style="border-left:6px solid #0d6efd">{{ m }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</div>
+</body>
+</html>

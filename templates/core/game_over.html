@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="game-over">
+  <h2>Game Over</h2>
+  <p>Punteggio finale: <strong>{{ score }}</strong></p>
+
+  <form method="post" action="{% url 'leaderboard_submit' %}">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="Il tuo nome (facoltativo)">
+    <button type="submit" class="btn btn-primary">Aggiungi alla classifica</button>
+  </form>
+
+  <div class="actions">
+    <a href="{% url 'game_start' mode %}" class="btn">Rigioca</a>
+    <a href="{% url 'leaderboard' mode %}" class="btn">Vedi classifica</a>
+  </div>
+</div>
+{% endblock %}

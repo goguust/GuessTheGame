@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;text-align:center;">
+  <h2>Game Over</h2>
+  <p style="font-size:18px;">Punteggio finale: <strong>{{ final_score }}</strong></p>
+
+  <form method="post" action="{% url 'leaderboard_submit' %}" style="margin-top:16px;">
+    {% csrf_token %}
+    <!--<input type="hidden" name="mode" value="murder">-->
+    <input type="text" name="name" placeholder="Il tuo nome (facoltativo)" style="padding:8px 10px;width:70%;max-width:360px;">
+    <div style="margin-top:10px;">
+      <button type="submit" class="btn btn-primary">Aggiungi alla classifica</button>
+      <a href="{% url 'murder_mode_start' %}" class="btn" style="margin-left:8px;">Rigioca</a>
+      <a href="{% url 'leaderboard' 'murder' %}" class="btn" style="margin-left:8px;">Vedi classifica</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

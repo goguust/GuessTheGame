@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="lb-wrap">
+  <h2 class="lb-title">🏆 Classifica {{ mode|title }}</h2>
+
+  <div class="lb-tabs">
+    <a class="lb-tab {% if mode == 'child' %}is-active{% endif %}" href="{% url 'leaderboard' 'child' %}">
+      👶 Child vs Non-Child
+    </a>
+    <a class="lb-tab {% if mode == 'murder' %}is-active{% endif %}" href="{% url 'leaderboard' 'murder' %}">
+      🗡️ Murder vs Non-Murder
+    </a>
+    <a class="lb-tab {% if mode == 'drugs' %}is-active{% endif %}" href="{% url 'leaderboard' 'drugs' %}">
+      💊 Drugs
+    </a>
+  </div>
+
+  {% if entries %}
+  <div class="lb-card">
+    <table class="lb-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nome</th>
+          <th>Punteggio</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr class="
+          {% if forloop.counter == 1 %} first
+          {% elif forloop.counter == 2 %} second
+          {% elif forloop.counter == 3 %} third
+          {% endif %}
+        ">
+          <td>
+            {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+          </td>
+          <td>{{ e.name }}</td>
+          <td><strong>{{ e.score }}</strong></td>
+          <td>{{ e.created_at|date:"Y-m-d H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="opacity:.8;">Ancora nessun punteggio per questa modalità.</p>
+  {% endif %}
+
+  <div class="lb-cta">
+    {% if mode == 'child' %}
+      <a href="{% url 'child_mode_start' %}" class="btn btn-primary">Gioca (Child)</a>
+    {% else %}
+      <a href="{% url 'murder_mode_start' %}" class="btn btn-primary">Gioca (Murder)</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.lb-wrap{ max-width:900px; margin:0 auto; }
+.lb-title{ font-size:30px; font-weight:800; margin:12px 0 16px; text-align:center; }
+
+.lb-tabs{ display:flex; gap:10px; margin:10px 0 14px; flex-wrap:wrap; justify-content:center; }
+.lb-tab{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+  text-decoration:none; color:inherit; transition:all .2s;
+}
+.lb-tab.is-active{ background:#2563eb; color:#fff; border-color:#1d4ed8; }
+
+.lb-card{
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden;
+  box-shadow:0 10px 24px rgba(0,0,0,.15);
+}
+.lb-table{ width:100%; border-collapse:collapse; font-size:15px; }
+.lb-table thead th{
+  text-align:left; padding:12px 14px; background:rgba(255,255,255,.06); border-bottom:1px solid rgba(255,255,255,.08);
+}
+.lb-table tbody td{ padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.06); }
+.lb-table tbody tr:nth-child(odd){ background:rgba(255,255,255,.03); }
+
+/* Stili speciali */
+.lb-table tr.first { background:linear-gradient(90deg,#ffd70033,#ffd70011); font-weight:bold; }
+.lb-table tr.second { background:linear-gradient(90deg,#c0c0c033,#c0c0c011); font-weight:bold; }
+.lb-table tr.third { background:linear-gradient(90deg,#cd7f3233,#cd7f3211); font-weight:bold; }
+
+.lb-cta{ margin-top:20px; text-align:center; }
+.btn{ display:inline-block; padding:10px 16px; border-radius:10px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.12); text-decoration:none; color:inherit;}
+.btn-primary{ background:#2563eb; color:#fff; border:1px solid #1d4ed8;}
+.btn-primary:hover{ background:#1d4ed8; }
+</style>
+{% endblock %}

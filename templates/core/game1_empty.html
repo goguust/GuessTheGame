@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="card">
+    <p>Servono almeno 2 persone con foto per giocare (attuali: {{ count }}).</p>
+    {% if request.user.is_staff %}
+    <p>Premi <strong>Aggiorna database</strong> in alto per popolare il DB.</p>
+    {% endif %}
+  </div>
+{% endblock %}

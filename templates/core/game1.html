@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Modalità 1</h1>
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid-2">
+      <button name="chosen" value="{{ a.id }}" class="card" style="cursor:pointer">
+        {% if a.image %}<img src="{{ a.image.url }}" class="fit" alt="{{ a.full_name }}">{% endif %}
+        <div class="name">{{ a.full_name }}</div>
+      </button>
+      <button name="chosen" value="{{ b.id }}" class="card" style="cursor:pointer">
+        {% if b.image %}<img src="{{ b.image.url }}" class="fit" alt="{{ b.full_name }}">{% endif %}
+        <div class="name">{{ b.full_name }}</div>
+      </button>
+    </div>
+  </form>
+  <p style="margin-top:16px"><a class="btn" href="{% url 'game1' %}">Salta turno</a></p>
+{% endblock %}
