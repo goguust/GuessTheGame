@@ -3,13 +3,13 @@
 
 <div class="home-hero">
   <div class="home-hero__halo"></div>
-  <h1 class="home-title">GameHub</h1>
-  <p class="home-subtitle">Scegli una modalità e metti alla prova il tuo istinto 🔍</p>
+  <h1 class="home-title">GuessTheGame</h1>
+  <p class="home-subtitle">Scegli una modalità e diventa il king dei carcerati</p>
 
 
 <div class="home-grid">
   <div class="card card--mode">
-    <div class="card__icon">🧭</div>
+    <div class="card__icon">👦</div>
     <h2 class="card__title">Modalità: Child vs Non-Child</h2>
     <p class="card__desc">
       Vengono mostrate due foto: una è un child-abuser, l’altra no.
@@ -23,7 +23,7 @@
   <div class="card__icon">🩸</div>
   <h2 class="card__title">Modalità: Murder vs Non-Murder</h2>
   <p class="card__desc">
-    Indovina chi è accusato di omicidio. Vite, streak e moltiplicatori come nella child-mode.
+    Indovina chi è accusato di omicidio. Vite, streak e moltiplicatori come nella Child vs Non-Child
   </p>
   <a href="{% url 'murder_mode_start' %}" class="btn btn-primary">Gioca ora</a>
 </div>
@@ -37,7 +37,7 @@
     <div class="card__icon">🏆</div>
     <h2 class="card__title">Classifica</h2>
     <p class="card__desc">
-      Inserisci il tuo nome a fine partita e scala la leaderboard.
+      Inserisci il tuo nome a fine partita e scala la classifica
     </p>
     <a href="{% url 'leaderboard' 'child' %}" class="btn">Classifica Child</a>
 <a href="{% url 'leaderboard' 'murder' %}" class="btn" style="margin-left:8px;">Classifica Murder</a>
