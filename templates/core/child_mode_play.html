@@ -34,7 +34,7 @@
       {% csrf_token %}
       <input type="hidden" name="side" value="left">
       <button type="submit" style="border:none;background:none;cursor:pointer;">
-        <img src="{{ left.image.url }}" alt="Left" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+        <img src="data:image/jpeg;base64,{{ left_img }}" alt="Left" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
       </button>
       <div style="margin-top:6px;font-weight:600;">{{ left.last_name }}, {{ left.first_name }}</div>
     </form>
@@ -43,7 +43,7 @@
       {% csrf_token %}
       <input type="hidden" name="side" value="right">
       <button type="submit" style="border:none;background:none;cursor:pointer;">
-        <img src="{{ right.image.url }}" alt="Right" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
+        <img src="data:image/jpeg;base64,{{ right_img }}" alt="Right" style="height:280px;width:auto;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.15);">
       </button>
       <div style="margin-top:6px;font-weight:600;">{{ right.last_name }}, {{ right.first_name }}</div>
     </form>

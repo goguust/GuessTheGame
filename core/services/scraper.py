@@ -4,20 +4,18 @@
 Scraper per https://netapps.ocfl.net/BestJail/
 - Scorre una lista di filtri (es. lettere 'a'..'z')
 - getInmates/{filtro}      -> bookingNumber + inmateName
-- getInmateDetails/{bk}    -> nome, età, immagine (data URL / base64 / URL)
+- getInmateDetails/{bk}    -> nome, età, immagine (base64 nel campo "IMAGE")
 - getCharges/{bk}          -> lista charges (salvati su tabella Charge, FK → Inmate)
+
+⚠️ NOTA: Le immagini non vengono più salvate su disco o DB.
+         Quando servono, si ottengono live via fetch_inmate_details().
 """
 
-import os
 import re
-import uuid
-import base64
 import string
 import requests
-from urllib.parse import urljoin
-
 from django.conf import settings
-from core.models import Inmate, Charge  # <-- importa anche Charge
+from core.models import Inmate, Charge
 
 BASE = "https://netapps.ocfl.net/BestJail/Home/"
 URL_SEARCH   = BASE + "getInmates/{}"
@@ -52,76 +50,25 @@ def _split_name(inmate_name: str):
     return first, last
 
 
-def _save_image_from_data(data: str) -> str | None:
-    """
-    Supporta:
-      - data URL: 'data:image/png;base64,...'
-      - base64 raw: 'iVBORw0...'
-      - URL http/https: download
-    Ritorna path relativo 'inmates/<uuid>.<ext>' (per Django), oppure None.
-    """
-    if not data:
-        return None
-
-    # URL assoluto
-    if data.startswith(("http://", "https://")):
-        try:
-            r = requests.get(data, timeout=TIMEOUT)
-            r.raise_for_status()
-            content = r.content
-            ext = ".jpg"
-            ct = r.headers.get("Content-Type", "")
-            if "png" in ct:
-                ext = ".png"
-            fname = f"{uuid.uuid4().hex}{ext}"
-            folder = os.path.join(settings.MEDIA_ROOT, "inmates")
-            os.makedirs(folder, exist_ok=True)
-            dest = os.path.join(folder, fname)
-            with open(dest, "wb") as f:
-                f.write(content)
-            return f"inmates/{fname}"
-        except Exception as e:
-            print(f"[IMG][ERR] download url: {e}")
-            return None
-
-    # data URL "data:image/..;base64,...."
-    if data.startswith("data:image"):
-        try:
-            header, b64 = data.split(",", 1)
-            ext = ".jpg"
-            if "png" in header.lower():
-                ext = ".png"
-            content = base64.b64decode(b64)
-            fname = f"{uuid.uuid4().hex}{ext}"
-            folder = os.path.join(settings.MEDIA_ROOT, "inmates")
-            os.makedirs(folder, exist_ok=True)
-            dest = os.path.join(folder, fname)
-            with open(dest, "wb") as f:
-                f.write(content)
-            return f"inmates/{fname}"
-        except Exception as e:
-            print(f"[IMG][ERR] data url: {e}")
-            return None
-
-    # base64 raw
-    try:
-        content = base64.b64decode(data)
-        fname = f"{uuid.uuid4().hex}.png"
-        folder = os.path.join(settings.MEDIA_ROOT, "inmates")
-        os.makedirs(folder, exist_ok=True)
-        dest = os.path.join(folder, fname)
-        with open(dest, "wb") as f:
-            f.write(content)
-        return f"inmates/{fname}"
-    except Exception as e:
-        print(f"[IMG][ERR] raw b64: {e}")
-        return None
-
-
 def _fetch_json(session: requests.Session, url: str):
+    """Effettua una POST vuota e ritorna JSON."""
     r = session.post(url, data="{}", timeout=TIMEOUT)
     r.raise_for_status()
     return r.json()
+
+
+def fetch_inmate_details(booking_number: str) -> dict:
+    """
+    Ritorna i dettagli dell'inmate come JSON (incluso il campo IMAGE in base64).
+    """
+    try:
+        resp = requests.post(URL_DETAILS.format(booking_number), data="{}", headers=HEADERS, timeout=TIMEOUT)
+        resp.raise_for_status()
+        data = resp.json()
+        return data[0] if isinstance(data, list) and data else {}
+    except Exception as e:
+        print(f"[SCRAPER][ERR] fetch_inmate_details {booking_number}: {e}")
+        return {}
 
 
 def run_scrape(
@@ -129,18 +76,19 @@ def run_scrape(
     limit: int | None = None,
     reset: bool = False,
     verbose: bool = True,
-    charge_filter_contains: str | None = None,  # es. "CANNABIS" per filtrare
+    charge_filter_contains: str | None = None,
 ):
     """
     - filters: lista lettere (es. ['a','d']); None => a..z
     - limit: massimo detenuti totali; 0/None => tutti
     - reset: svuota DB prima
-    - charge_filter_contains: se valorizzato, salva SOLO i charges che contengono questa stringa (case-insensitive). Es: "CANNABIS"
+    - charge_filter_contains: se valorizzato, salva SOLO i charges che contengono questa stringa (case-insensitive).
     """
     if reset:
         Inmate.objects.all().delete()
         Charge.objects.all().delete()
-        if verbose: print("[SCRAPER] DB resettato.")
+        if verbose: 
+            print("[SCRAPER] DB resettato.")
 
     if not filters:
         filters = list(string.ascii_lowercase)
@@ -152,7 +100,8 @@ def run_scrape(
 
     for flt in filters:
         url = URL_SEARCH.format(flt)
-        if verbose: print(f"[SCRAPER] Filtro '{flt}' -> {url}")
+        if verbose: 
+            print(f"[SCRAPER] Filtro '{flt}' -> {url}")
 
         try:
             results = _fetch_json(session, url)
@@ -165,7 +114,7 @@ def run_scrape(
             full_name = row.get("inmateName", "").strip()
             first, last = _split_name(full_name)
 
-            # --- Dettagli
+            # --- Dettagli (per età)
             try:
                 det = _fetch_json(session, URL_DETAILS.format(booking))
                 det0 = det[0] if isinstance(det, list) and det else {}
@@ -180,10 +129,7 @@ def run_scrape(
             except Exception:
                 age = None
 
-            image_field = det0.get("IMAGE") or det0.get("Image") or ""
-            image_rel = _save_image_from_data(image_field) if image_field else None
-
-            # --- Salva/aggiorna Inmate
+            # --- Salva/aggiorna Inmate (senza immagine)
             inmate, was_created = Inmate.objects.update_or_create(
                 booking_number=booking,
                 defaults={
@@ -197,10 +143,6 @@ def run_scrape(
             else:
                 updated += 1
 
-            if image_rel and not inmate.image:
-                inmate.image.name = image_rel
-                inmate.save(update_fields=["image"])
-
             # --- Charges
             try:
                 charges = _fetch_json(session, URL_CHARGES.format(booking))
@@ -208,7 +150,6 @@ def run_scrape(
                 print(f"[SCRAPER][ERR] charges {booking}: {e}")
                 charges = []
 
-            # puliamo i charges esistenti per l'inmate e reinseriamo (più semplice e coerente)
             Charge.objects.filter(inmate=inmate).delete()
 
             for ch in charges:
@@ -217,7 +158,7 @@ def run_scrape(
                     continue
                 if charge_filter_contains:
                     if charge_filter_contains.upper() not in desc.upper():
-                        continue  # filtra se richiesto (es. solo 'CANNABIS')
+                        continue
 
                 bond   = (ch.get("BondAmount") or "").strip()
                 case   = (ch.get("CourtCaseNumber") or "").strip()
@@ -236,9 +177,11 @@ def run_scrape(
             scanned += 1
             if limit and scanned >= limit:
                 stats = {"scanned": scanned, "created": created, "updated": updated}
-                if verbose: print(f"[SCRAPER] DONE (limit raggiunto): {stats}")
+                if verbose: 
+                    print(f"[SCRAPER] DONE (limit raggiunto): {stats}")
                 return stats
 
     stats = {"scanned": scanned, "created": created, "updated": updated}
-    if verbose: print(f"[SCRAPER] DONE: {stats}")
+    if verbose: 
+        print(f"[SCRAPER] DONE: {stats}")
     return stats

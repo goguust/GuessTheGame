@@ -6,7 +6,7 @@ class Inmate(models.Model):
     first_name     = models.CharField(max_length=100, blank=True)
     last_name      = models.CharField(max_length=100, blank=True)
     age            = models.IntegerField(blank=True, null=True)
-    image          = models.ImageField(upload_to="inmates/", blank=True, null=True)
+    #image          = models.ImageField(upload_to="inmates/", blank=True, null=True)
 
     def __str__(self):
         return f"{self.last_name}, {self.first_name} ({self.booking_number})"
